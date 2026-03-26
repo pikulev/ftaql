@@ -132,17 +132,6 @@ jobs:
             ~/.cargo/git/db/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Update packages
-        run: sudo apt-get update
-
-      - name: Install aarch64 dependencies
-        run: sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-
-      - name: Install aarch64-unknown-linux-musl dependencies
-        run: |
-          sudo apt-get install -y musl-tools
-          sudo apt-get install gcc-arm-linux-gnueabi
-
       - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
@@ -157,11 +146,8 @@ jobs:
           rustup target add aarch64-unknown-linux-musl
           rustup target add arm-unknown-linux-musleabi
 
-      - name: Install MUSL toolchain for AArch64
-        run: |
-          wget -q https://musl.cc/aarch64-linux-musl-cross.tgz
-          tar -xf aarch64-linux-musl-cross.tgz
-          echo "$(pwd)/aarch64-linux-musl-cross/bin" >> $GITHUB_PATH
+      - name: Install cross
+        run: cargo install cross --locked
 
       - name: Build and tarball
         run: |
@@ -173,7 +159,7 @@ jobs:
 
           for TARGET in "${TARGETS[@]}"; do
             echo "Building for $TARGET"
-            cargo build --release --target="$TARGET"
+            cross build --release --target="$TARGET"
             chmod +x target/${TARGET}/release/ftaql
             tar czf "ftaql-${TARGET}.tar.gz" -C "./target/${TARGET}/release/" ftaql
           done

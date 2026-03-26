@@ -1,86 +1,133 @@
 # Maintenance of FtaQl
 
-This project currently consists of 4 components:
+FtaQl currently ships four maintainer-facing deliverables:
 
-- The Rust `ftaql` crate, in `crates/ftaql`
-- The Rust `ftaql-wasm` crate, in `crates/ftaql-wasm`
-- The NPM `@piklv/ftaql-cli` package, in `packages/ftaql`
-- The NPM `@piklv/ftaql-wasm` package, an artefact of the `ftaql-wasm` Rust crate
+- the Rust crate `ftaql` in `crates/ftaql`
+- the Rust crate `ftaql-wasm` in `crates/ftaql-wasm`
+- the npm package `@piklv/ftaql-cli` in `packages/ftaql`
+- the npm package `@piklv/ftaql-wasm`, generated from `crates/ftaql-wasm/pkg`
 
-The NPM `@piklv/ftaql-cli` package is a super thin layer that simply calls the relevant `ftaql` binary. For this to work, the NPM package is designed to contain pre-built binaries.
+The CLI npm package is intentionally thin. It only dispatches to a platform-specific `ftaql` binary that must be present inside `packages/ftaql/binaries` at publish time.
 
-## Development
+## What CI verifies
 
-Use PRs into `main`. GitHub Actions are set up to:
+Use PRs into `main`. The `test` workflow is the release gate and is expected to stay green on `main`.
 
-- Compile the Rust crate & run Rust tests, output test coverage (Ubuntu)
-- Build binaries for all targets on windows/macos/linux
-- Smoke test all built binaries against a sample file
-- Construct the NPM package, i.e. install the compiled binaries into `packages/ftaql/binaries`
-- Publish the NPM package locally using Verdaccio
-- Smoke test the verdaccio-published NPM package via a sample file
-- Build the scoped WASM package in dry-run mode and verify the generated `pkg/package.json`
+Current CI covers:
 
-The NPM CLI package itself is plain JavaScript without any Node.js tests or build step, since those things aren't really warranted.
+- Rust build, formatting, tests, and coverage reporting
+- native binary builds for macOS, Windows, and Linux
+- smoke tests against built binaries
+- npm CLI dry-run publish via Verdaccio
+- WASM package dry-run build and metadata verification
 
-## Publishing and releasing (`ftaql` crate, `@piklv/ftaql-cli` npm package)
+The npm CLI package itself is plain JavaScript, so there is no extra Node build step.
 
-1. Merge changes over time to `main`, with green builds to verify everything is healthy
-2. Bump versions and update `CHANGELOG.md`
-   1. Set the version in the root `package.json` for workspace metadata consistency
-   1. Set the version in `packages/ftaql/package.json`
-   2. Set the version in `crates/ftaql/Cargo.toml`
-   3. Set the version in `crates/ftaql-wasm/Cargo.toml`
-   4. Update any release checks with hard-coded versions, especially `.github/workflows/wasm-dry-run.yml`
-   5. Run `cargo update` so that the lockfile stays in sync. Do this in a PR and merge it to `main`.
-3. When you're satisfied everything is ready on `main` (and the build is green), locally tag the repo with a new version e.g. `v1.0.0`. Push this tag to trigger the release.
-4. The release workflow publishes:
-   1. GitHub Release assets with all native binaries
-   2. The Rust crate `ftaql` to crates.io
-   3. The scoped npm package `@piklv/ftaql-cli` to npm
-5. Ensure these GitHub Actions secrets exist before tagging:
-   1. `CARGO_REGISTRY_TOKEN`
-   2. `NPM_TOKEN`
+## Release surface
 
-## Pre-release checklist
+The first stable release consists of these public artefacts:
 
-- Confirm GitHub Actions secrets are configured: `CARGO_REGISTRY_TOKEN` and `NPM_TOKEN`
-- Confirm the repository allows `GITHUB_TOKEN` to create draft releases and upload release assets
-- Confirm `CHANGELOG.md`, `packages/ftaql/package.json`, `crates/ftaql/Cargo.toml`, `crates/ftaql-wasm/Cargo.toml`, and `.github/workflows/wasm-dry-run.yml` all point at the same release version
-- Merge the release-prep PR to `main` and wait for the `test` workflow to pass on `main`
-- Create and push the release tag locally:
+- a draft GitHub Release with native archives for:
+  - `ftaql-x86_64-apple-darwin.tar.gz`
+  - `ftaql-aarch64-apple-darwin.tar.gz`
+  - `ftaql-x86_64-pc-windows-msvc.zip`
+  - `ftaql-aarch64-pc-windows-msvc.zip`
+  - `ftaql-x86_64-unknown-linux-musl.tar.gz`
+  - `ftaql-aarch64-unknown-linux-musl.tar.gz`
+  - `ftaql-arm-unknown-linux-musleabi.tar.gz`
+- the Rust crate `ftaql` on crates.io
+- the npm package `@piklv/ftaql-cli` on npm
+- the npm package `@piklv/ftaql-wasm` on npm, published manually after the automated release completes
+
+## Author prerequisites
+
+Before tagging a release, verify all of the following:
+
+- GitHub Actions secrets exist at the repository level:
+  - `CARGO_REGISTRY_TOKEN`
+  - `NPM_TOKEN`
+- GitHub workflow permissions allow release creation and asset uploads
+  - the workflow requests `contents: write`
+  - repository Actions are enabled
+- your local machine is ready for the manual WASM publish:
+  - `npm whoami` succeeds
+  - `wasm-pack --version` succeeds
+- the crates.io account that will publish `ftaql` is ready for a first publish
+
+Useful checks:
+
+```sh
+gh secret list --app actions
+gh api repos/pikulev/ftaql/actions/permissions
+gh api repos/pikulev/ftaql/actions/permissions/workflow
+npm whoami
+wasm-pack --version
+```
+
+## Release prep PR
+
+Do release preparation in a normal PR, then merge it into `main`.
+
+For a version bump:
+
+1. Update `CHANGELOG.md`.
+2. Keep the version aligned in:
+   - `package.json`
+   - `packages/ftaql/package.json`
+   - `crates/ftaql/Cargo.toml`
+   - `crates/ftaql-wasm/Cargo.toml`
+3. Run `cargo update` so the lockfile stays in sync.
+4. Verify the WASM dry-run metadata check still matches the crate version.
+5. Merge the PR and wait for `test` to pass on `main`.
+
+For `v1.0.0`, the version is already aligned in the files above.
+
+## Pre-tag checklist
+
+Run through this checklist immediately before creating the release tag:
+
+- `git status --short --branch` is clean
+- `gh run list --limit 5` shows the latest `main` run as successful
+- `cargo publish --dry-run` succeeds in `crates/ftaql`
+- the latest `CHANGELOG.md` entry is ready to become release notes
+- you understand that `packages/ftaql/binaries` is populated by CI, not by the repository checkout
+
+That last point matters because `packages/ftaql/check.js` enforces the presence of all platform binaries before the npm CLI package can be published. A plain local `npm publish` from the repository will fail unless the binaries have already been extracted into `packages/ftaql/binaries`.
+
+## Automated release flow
+
+The automated release covers GitHub Release assets, `ftaql` on crates.io, and `@piklv/ftaql-cli` on npm.
+
+Create and push the tag from a clean local checkout:
 
 ```sh
 git tag v1.0.0
 git push origin v1.0.0
 ```
 
-- Verify the triggered release workflow produces:
-  - a draft GitHub Release with all platform assets attached
-  - a published `ftaql` crate on crates.io
-  - a published `@piklv/ftaql-cli` package on npm
-- Review the draft GitHub Release before publishing it from draft state
-
-## First real publish commands
-
-For the automated CLI/crate release:
+Then monitor the workflow:
 
 ```sh
-git tag v1.0.0
-git push origin v1.0.0
+gh run list --workflow release.yml --limit 5
+gh run watch
 ```
 
-## WASM npm package
+The release workflow should produce:
 
-This should be published manually. From the `crates/ftaql-wasm` directory:
+- a draft GitHub Release with all seven platform archives attached
+- a published `ftaql` crate on crates.io
+- a published `@piklv/ftaql-cli` package on npm
 
-1. Ensure the crate version is in sync. Similar to the `@piklv/ftaql-cli` package, it usually makes sense for the core `ftaql` crate to be published first.
-2. If you already have the `crates/ftaql-wasm/pkg` dir, delete it / clear it out.
-3. Run `wasm-pack build --target web --scope piklv`. This generates a scoped npm package in `pkg` as `@piklv/ftaql-wasm`.
-4. If you want to locally debug before publish, you can paste the contents of `pkg` to override an existing version in `node_modules.`
-5. Run `cd pkg && npm publish --access public`. Scoped npm packages must be published with public access.
+## Manual WASM npm publish
 
-First real manual WASM publish:
+Publish `@piklv/ftaql-wasm` only after the automated release has succeeded.
+
+From `crates/ftaql-wasm`:
+
+1. Confirm the crate version matches the already-published `ftaql` release.
+2. Remove any previous `pkg` directory.
+3. Build the package with `wasm-pack build --target web --scope piklv`.
+4. Publish from the generated `pkg` directory with public access.
 
 ```sh
 cd crates/ftaql-wasm
@@ -90,15 +137,36 @@ cd pkg
 npm publish --access public
 ```
 
-## Code Coverage
+If you want to test the generated package locally before publishing, inspect `pkg/package.json` and temporarily use the generated files from `pkg`.
 
-Code coverage is reported during the `test` workflow.
+## Post-release verification
 
-To check the coverage locally, install and run `tarpaulin`:
+After all publishes complete:
 
+- verify the draft GitHub Release contains all seven archives
+- verify `ftaql` is visible on crates.io
+- verify `@piklv/ftaql-cli` is visible on npm
+- verify `@piklv/ftaql-wasm` is visible on npm
+- verify install smoke tests work from the published npm package
+- review and publish the GitHub Release from draft state
+
+Suggested smoke checks:
+
+```sh
+npx @piklv/ftaql-cli . --db ./ftaql.sqlite
+npm view @piklv/ftaql-cli version
+npm view @piklv/ftaql-wasm version
 ```
+
+## Code coverage
+
+Coverage is reported during the `test` workflow.
+
+To inspect it locally:
+
+```sh
 cargo install cargo-tarpaulin
 cargo tarpaulin
 ```
 
-Note that `tarpaulin` is not installed as a build dependency, hence should be installed manually to generate coverage.
+`cargo-tarpaulin` is intentionally not installed as a build dependency and should be installed manually when needed.

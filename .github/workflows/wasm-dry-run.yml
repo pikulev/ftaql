@@ -32,11 +32,16 @@ jobs:
         run: |
           python3 - <<'PY'
           import json
+          import re
           from pathlib import Path
 
           package_json = json.loads(Path("package.json").read_text())
+          cargo_toml = Path("../Cargo.toml").read_text()
+          match = re.search(r'^version = "([^"]+)"$', cargo_toml, re.MULTILINE)
+          assert match is not None, "Could not determine version from Cargo.toml"
+          expected_version = match.group(1)
           assert package_json["name"] == "@piklv/ftaql-wasm", package_json["name"]
-          assert package_json["version"] == "1.0.0", package_json["version"]
+          assert package_json["version"] == expected_version, package_json["version"]
           assert Path("ftaql_wasm.js").exists(), "ftaql_wasm.js missing"
           assert Path("ftaql_wasm_bg.wasm").exists(), "ftaql_wasm_bg.wasm missing"
           print("WASM dry-run package looks correct")

@@ -25,3 +25,4 @@ First stable release of FtaQl.
 - Target `musl` Linux binaries on `x86_64`, `arm`, and `aarch64` for broader compatibility
 - Improve binary packaging reliability on macOS, Linux, and Ubuntu
 - Include the WASM npm module as part of the release surface
+- Request explicit GitHub Release write permissions in CI and keep WASM package version checks aligned with `Cargo.toml`
