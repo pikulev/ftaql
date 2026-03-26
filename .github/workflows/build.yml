@@ -126,7 +126,6 @@ jobs:
         continue-on-error: false
         with:
           path: |
-            ~/.cargo/bin/
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
@@ -157,11 +156,13 @@ jobs:
             arm-unknown-linux-musleabi
           )
 
+          cross --version
+
           for TARGET in "${TARGETS[@]}"; do
             echo "Building for $TARGET"
-            cross build --release --target="$TARGET"
-            chmod +x target/${TARGET}/release/ftaql
-            tar czf "ftaql-${TARGET}.tar.gz" -C "./target/${TARGET}/release/" ftaql
+            CARGO_TARGET_DIR="target/${TARGET}" cross build --release --target="$TARGET"
+            chmod +x "target/${TARGET}/${TARGET}/release/ftaql"
+            tar czf "ftaql-${TARGET}.tar.gz" -C "./target/${TARGET}/${TARGET}/release/" ftaql
           done
 
       - name: Upload binaries as artifacts
