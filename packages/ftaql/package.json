@@ -1,0 +1,34 @@
+{
+  "name": "@piklv/ftaql-cli",
+  "version": "1.0.0",
+  "description": "FtaQl is a super-fast TypeScript static analysis tool written in Rust",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pikulev/ftaql.git"
+  },
+  "author": "vasya pikulev",
+  "homepage": "https://github.com/pikulev/ftaql#readme",
+  "bugs": {
+    "url": "https://github.com/pikulev/ftaql/issues"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "bin": {
+    "ftaql": "index.js"
+  },
+  "types": "@types/ftaql-cli.d.ts",
+  "files": [
+    "index.js",
+    "check.js",
+    "targets.js",
+    "README.md",
+    "@types",
+    "binaries"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepublishOnly": "node check.js"
+  }
+}

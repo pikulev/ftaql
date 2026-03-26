@@ -1,0 +1,207 @@
+---
+source: crates/ftaql/tests/runtime_cycles_integration_test.rs
+expression: analysis_result
+snapshot_kind: text
+---
+{
+  "project_analysis": {
+    "cycle_members": [
+      "a.ts",
+      "b.ts",
+      "c.ts",
+      "d.ts"
+    ],
+    "cycles": [
+      {
+        "id": 0,
+        "size": 2,
+        "graph": {
+          "0": {
+            "1": 1
+          },
+          "1": {
+            "0": 1
+          }
+        }
+      },
+      {
+        "id": 1,
+        "size": 2,
+        "graph": {
+          "2": {
+            "3": 1
+          },
+          "3": {
+            "2": 1
+          }
+        }
+      }
+    ],
+    "runtime_cycles": [
+      {
+        "id": 0,
+        "size": 2,
+        "graph": {
+          "0": {
+            "1": 1
+          },
+          "1": {
+            "0": 1
+          }
+        }
+      }
+    ]
+  },
+  "findings": [
+    {
+      "file_name": "a.ts",
+      "size_metrics": {
+        "line_count": 2
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 5,
+          "uniq_operands": 3,
+          "total_operators": 5,
+          "total_operands": 4,
+          "program_length": 9,
+          "vocabulary_size": 8,
+          "volume": 27.0,
+          "difficulty": 2.6666666666666665,
+          "effort": 72.0,
+          "time": 4.0,
+          "bugs": 0.009
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 1,
+        "instability": 0.5,
+        "dependency_strength": {
+          "b.ts": 1
+        },
+        "cycles": {
+          "cycle_id": 0,
+          "runtime_cycle_id": 0
+        }
+      },
+      "scores": {
+        "file_score": 6.457950886979617,
+        "coupling_score": 166.6985964934737
+      }
+    },
+    {
+      "file_name": "b.ts",
+      "size_metrics": {
+        "line_count": 4
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 7,
+          "uniq_operands": 3,
+          "total_operators": 7,
+          "total_operands": 4,
+          "program_length": 11,
+          "vocabulary_size": 10,
+          "volume": 36.541209043760986,
+          "difficulty": 4.0,
+          "effort": 146.16483617504394,
+          "time": 8.12026867639133,
+          "bugs": 0.012180403014586996
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 1,
+        "instability": 0.5,
+        "dependency_strength": {
+          "a.ts": 1
+        },
+        "cycles": {
+          "cycle_id": 0,
+          "runtime_cycle_id": 0
+        }
+      },
+      "scores": {
+        "file_score": 7.136516072262594,
+        "coupling_score": 166.6985964934737
+      }
+    },
+    {
+      "file_name": "c.ts",
+      "size_metrics": {
+        "line_count": 4
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 3,
+          "uniq_operands": 3,
+          "total_operators": 3,
+          "total_operands": 4,
+          "program_length": 7,
+          "vocabulary_size": 6,
+          "volume": 18.094737505048094,
+          "difficulty": 1.3333333333333333,
+          "effort": 24.126316673397458,
+          "time": 1.3403509262998587,
+          "bugs": 0.006031579168349364
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 1,
+        "instability": 0.5,
+        "dependency_strength": {
+          "d.ts": 1
+        },
+        "cycles": {
+          "cycle_id": 1
+        }
+      },
+      "scores": {
+        "file_score": 5.583128210518055,
+        "coupling_score": 166.6985964934737
+      }
+    },
+    {
+      "file_name": "d.ts",
+      "size_metrics": {
+        "line_count": 4
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 3,
+          "uniq_operands": 3,
+          "total_operators": 3,
+          "total_operands": 4,
+          "program_length": 7,
+          "vocabulary_size": 6,
+          "volume": 18.094737505048094,
+          "difficulty": 1.3333333333333333,
+          "effort": 24.126316673397458,
+          "time": 1.3403509262998587,
+          "bugs": 0.006031579168349364
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 1,
+        "instability": 0.5,
+        "dependency_strength": {
+          "c.ts": 1
+        },
+        "cycles": {
+          "cycle_id": 1
+        }
+      },
+      "scores": {
+        "file_score": 5.583128210518055,
+        "coupling_score": 166.6985964934737
+      }
+    }
+  ]
+}

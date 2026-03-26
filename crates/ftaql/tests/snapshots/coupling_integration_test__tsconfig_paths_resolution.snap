@@ -1,0 +1,217 @@
+---
+source: crates/ftaql/tests/coupling_integration_test.rs
+expression: analysis_result
+snapshot_kind: text
+---
+{
+  "project_analysis": {
+    "cycle_members": [],
+    "cycles": [],
+    "runtime_cycles": []
+  },
+  "findings": [
+    {
+      "file_name": "packages/app/src/main.ts",
+      "size_metrics": {
+        "line_count": 12
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 5,
+          "uniq_operands": 7,
+          "total_operators": 18,
+          "total_operands": 12,
+          "program_length": 30,
+          "vocabulary_size": 12,
+          "volume": 107.54887502163469,
+          "difficulty": 3.4285714285714284,
+          "effort": 368.73900007417603,
+          "time": 20.48550000412089,
+          "bugs": 0.03584962500721156
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 0,
+        "efferent_coupling": 4,
+        "instability": 1.0,
+        "dependency_strength": {
+          "packages/app/src/utils.ts": 1,
+          "packages/lib/src/fallback/one.ts": 1,
+          "packages/lib/src/helpers.ts": 1,
+          "packages/lib/src/utils.ts": 1
+        },
+        "cycles": {}
+      },
+      "scores": {
+        "file_score": 7.690944198185733,
+        "coupling_score": 135.1437221576519
+      }
+    },
+    {
+      "file_name": "packages/app/src/utils.ts",
+      "size_metrics": {
+        "line_count": 3
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 4,
+          "uniq_operands": 2,
+          "total_operators": 4,
+          "total_operands": 2,
+          "program_length": 6,
+          "vocabulary_size": 6,
+          "volume": 15.509775004326936,
+          "difficulty": 2.0,
+          "effort": 31.019550008653873,
+          "time": 1.723308333814104,
+          "bugs": 0.005169925001442312
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 0,
+        "instability": 0.0,
+        "dependency_strength": {},
+        "cycles": {}
+      },
+      "scores": {
+        "file_score": 5.583128210518055,
+        "coupling_score": 51.0
+      }
+    },
+    {
+      "file_name": "packages/lib/src/fallback/one.ts",
+      "size_metrics": {
+        "line_count": 1
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 2,
+          "uniq_operands": 2,
+          "total_operators": 2,
+          "total_operands": 2,
+          "program_length": 4,
+          "vocabulary_size": 4,
+          "volume": 8.0,
+          "difficulty": 1.0,
+          "effort": 8.0,
+          "time": 0.4444444444444444,
+          "bugs": 0.0026666666666666666
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 0,
+        "instability": 0.0,
+        "dependency_strength": {},
+        "cycles": {}
+      },
+      "scores": {
+        "file_score": 4.350134899311939,
+        "coupling_score": 51.0
+      }
+    },
+    {
+      "file_name": "packages/lib/src/helpers.ts",
+      "size_metrics": {
+        "line_count": 2
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 2,
+          "uniq_operands": 4,
+          "total_operators": 4,
+          "total_operands": 4,
+          "program_length": 8,
+          "vocabulary_size": 6,
+          "volume": 20.67970000576925,
+          "difficulty": 1.0,
+          "effort": 20.67970000576925,
+          "time": 1.1488722225427361,
+          "bugs": 0.006893233335256416
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 0,
+        "instability": 0.0,
+        "dependency_strength": {},
+        "cycles": {}
+      },
+      "scores": {
+        "file_score": 5.583128210518055,
+        "coupling_score": 51.0
+      }
+    },
+    {
+      "file_name": "packages/lib/src/specific/index.ts",
+      "size_metrics": {
+        "line_count": 1
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 2,
+          "uniq_operands": 2,
+          "total_operators": 2,
+          "total_operands": 2,
+          "program_length": 4,
+          "vocabulary_size": 4,
+          "volume": 8.0,
+          "difficulty": 1.0,
+          "effort": 8.0,
+          "time": 0.4444444444444444,
+          "bugs": 0.0026666666666666666
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 0,
+        "efferent_coupling": 0,
+        "instability": 0.0,
+        "dependency_strength": {},
+        "cycles": {}
+      },
+      "scores": {
+        "file_score": 4.350134899311939,
+        "coupling_score": 0.0
+      }
+    },
+    {
+      "file_name": "packages/lib/src/utils.ts",
+      "size_metrics": {
+        "line_count": 1
+      },
+      "complexity_metrics": {
+        "cyclomatic": 1,
+        "halstead": {
+          "uniq_operators": 2,
+          "uniq_operands": 2,
+          "total_operators": 2,
+          "total_operands": 2,
+          "program_length": 4,
+          "vocabulary_size": 4,
+          "volume": 8.0,
+          "difficulty": 1.0,
+          "effort": 8.0,
+          "time": 0.4444444444444444,
+          "bugs": 0.0026666666666666666
+        }
+      },
+      "coupling_metrics": {
+        "afferent_coupling": 1,
+        "efferent_coupling": 0,
+        "instability": 0.0,
+        "dependency_strength": {},
+        "cycles": {}
+      },
+      "scores": {
+        "file_score": 4.350134899311939,
+        "coupling_score": 51.0
+      }
+    }
+  ]
+}

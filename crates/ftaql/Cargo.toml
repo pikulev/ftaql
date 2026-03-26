@@ -1,0 +1,48 @@
+[package]
+name = "ftaql"
+version = "1.0.0"
+edition = "2021"
+authors = ["Vasya Pikulev"]
+license = "MIT"
+description = "FtaQl static analysis engine for TypeScript and JavaScript"
+homepage = "https://github.com/pikulev/ftaql"
+documentation = "https://github.com/pikulev/ftaql"
+repository = "https://github.com/pikulev/ftaql"
+readme = "../../README.md"
+
+[dependencies]
+anyhow = "1.0"
+async-trait = "0.1.80"
+chrono = "0.4.38"
+clap = { version = "4.5.38", features = ["derive"], optional = true }
+crossbeam-channel = "0.5.13"
+dashmap = "5.5.3"
+env_logger = "0.11"
+globset = "0.4"
+ignore = "0.4"
+log = "0.4"
+rayon = "1.10.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+swc_common = "0.31.12"
+swc_ecma_ast = "0.106.0"
+swc_ecma_parser = "0.136.0"
+swc_ecma_visit = "0.92.0"
+tempfile = "3.20.0"
+path-clean = "1.0.1"
+traversal = "0.1.2"
+rspack_resolver = "0.6.0"
+tokio = { version = "1", features = ["full"] }
+petgraph = "0.6.5"
+indexmap = "2.10"
+rusqlite = { version = "0.39.0", features = ["bundled"] }
+
+[features]
+default = ["cli"]
+cli = ["clap"]
+
+[dev-dependencies]
+tempfile = "3.3.0"
+assert_cmd = "2.0"
+predicates = "3.1.0"
+insta = { version = "1.34.0", features = ["json", "redactions"] }

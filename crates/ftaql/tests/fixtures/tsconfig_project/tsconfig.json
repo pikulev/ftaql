@@ -1,0 +1,22 @@
+{
+  // This is the base tsconfig file for the entire monorepo.
+  "compilerOptions": {
+    /*
+      Base URL for module resolution.
+      All path aliases are relative to this.
+    */
+    "baseUrl": ".",
+    "paths": {
+      // General alias for the lib package.
+      "@lib/*": ["packages/lib/src/*"],
+      // Alias that points directly to a file.
+      "@lib/helpers": ["packages/lib/src/helpers.ts"],
+      // Alias with multiple fallback paths. The resolver should try them in order.
+      "@lib/fallback/*": [
+        "packages/lib/src/non-existent-path/*",
+        "packages/lib/src/fallback/*"
+      ]
+    }
+  },
+  "exclude": ["node_modules"]
+}

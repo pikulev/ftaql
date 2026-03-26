@@ -1,0 +1,143 @@
+name: Build Binaries & Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  call_build_binaries:
+    uses: ./.github/workflows/build.yml
+
+  create_github_release:
+    needs: [call_build_binaries]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: |
+          VERSION=$(grep '^version =' crates/ftaql/Cargo.toml | sed 's/^version = "\(.*\)"/\1/')
+          echo "Version: $VERSION"
+          echo "FTAQL_VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: v${{ steps.get_version.outputs.FTAQL_VERSION }}
+          draft: true
+          prerelease: false
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-binaries
+
+      - name: Download windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+
+      - name: Download linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-binaries
+
+      - name: Upload all assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ftaql-x86_64-apple-darwin.tar.gz
+            ftaql-aarch64-apple-darwin.tar.gz
+            ftaql-x86_64-pc-windows-msvc.zip
+            ftaql-aarch64-pc-windows-msvc.zip
+            ftaql-aarch64-unknown-linux-musl.tar.gz
+            ftaql-x86_64-unknown-linux-musl.tar.gz
+            ftaql-arm-unknown-linux-musleabi.tar.gz
+
+  publish_rust_crate:
+    runs-on: ubuntu-latest
+    needs: [create_github_release]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update packages
+        run: sudo apt-get update
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt, clippy
+          profile: minimal
+          target: x86_64-unknown-linux-musl
+      - name: Publish to crates.io
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          cargo publish --token $CARGO_REGISTRY_TOKEN
+        working-directory: crates/ftaql
+
+  publish_ftaql_cli:
+    needs: [create_github_release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-binaries
+          path: artifact/
+
+      - name: Download linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-binaries
+          path: artifact/
+
+      - name: Download windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+          path: artifact/
+
+      - name: Extract .tar.gz artifacts
+        run: |
+          for file in artifact/*.tar.gz; do
+            base=$(basename -- "$file")
+            dirname="${base%%.*}"
+            mkdir -p packages/ftaql/binaries/"$dirname"
+            tar -xzf "$file" -C packages/ftaql/binaries/"$dirname"
+          done
+
+      - name: Extract .zip artifacts
+        run: |
+          for file in artifact/*.zip; do
+            dir=$(basename "$file" .zip)
+            mkdir -p "packages/ftaql/binaries/$dir"
+            unzip -o "$file" -d "packages/ftaql/binaries/$dir"
+          done
+
+          # List out the binaries dir
+          ls -R packages/ftaql/binaries/
+
+      - name: Publish to npm
+        run: npm publish --access public
+        working-directory: packages/ftaql
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -1,0 +1,92 @@
+name: Publish NPM Package (Dry Run)
+
+on: workflow_call
+
+jobs:
+  publish_ftaql_cli_dry_run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Download macOS artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: macos-binaries
+          path: artifact/
+
+      - name: Download linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-binaries
+          path: artifact/
+
+      - name: Download windows artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-binaries
+          path: artifact/
+
+      - name: Extract nix artifacts
+        run: |
+          for file in artifact/*.tar.gz; do
+            base=$(basename -- "$file")
+            dirname="${base%%.*}"
+            mkdir -p packages/ftaql/binaries/"$dirname"
+            tar -xzf "$file" -C packages/ftaql/binaries/"$dirname"
+          done
+
+      - name: Extract artifacts
+        run: |
+          for file in artifact/*.zip; do
+            dir=$(basename "$file" .zip)
+            mkdir -p "packages/ftaql/binaries/$dir"
+            unzip -o "$file" -d "packages/ftaql/binaries/$dir"
+          done
+
+          # List out the binaries dir
+          ls -R packages/ftaql/binaries/
+
+      - name: Install Verdaccio
+        run: npm install -g verdaccio verdaccio-memory verdaccio-auth-memory
+
+      - name: Setup Verdaccio Config
+        run: |
+          mkdir -p $HOME/.config/verdaccio
+          cp .github/verdaccio-config.yml $HOME/.config/verdaccio/config.yml
+
+      - name: Start Verdaccio
+        run: |
+          npx verdaccio --config $HOME/.config/verdaccio/config.yml --listen 4873 &
+          sleep 10
+
+      - name: Publish package
+        run: |
+          npm config set registry http://localhost:4873/
+          npm config set @piklv:registry http://localhost:4873/
+          npm config set //localhost:4873/:_authToken "$(echo -n 'test:test' | base64)"
+          cd packages/ftaql
+          npm publish --access public --registry http://localhost:4873
+          cd ../
+
+      - name: Install and check package
+        run: |
+          # Install FtaQl via the CLI package
+          npm install @piklv/ftaql-cli --registry http://localhost:4873
+          npx @piklv/ftaql-cli .github --db ./.github/ftaql.sqlite --revision dry-run --ref verdaccio
+          python3 - <<'PY'
+          import sqlite3
+          db = sqlite3.connect(".github/ftaql.sqlite")
+          run_count = db.execute("select count(*) from analysis_runs").fetchone()[0]
+          file_count = db.execute("select count(*) from files").fetchone()[0]
+          revision = db.execute("select revision from analysis_runs").fetchone()[0]
+          assert run_count == 1, run_count
+          assert file_count >= 1, file_count
+          assert revision == "dry-run", revision
+          print("Package smoke test passed")
+          PY

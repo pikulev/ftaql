@@ -1,0 +1,157 @@
+name: Test Rust package and built binaries
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["*"]
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  test_rust_crate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Basic build validation
+        run: |
+          cargo build
+
+      - name: Check program
+        run: |
+          cargo check
+
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features
+
+      - name: Output test coverage
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --fail-under 75
+
+  build_binaries:
+    uses: ./.github/workflows/build.yml
+
+  test_built_binaries:
+    needs: build_binaries
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        include:
+          - os: macos-latest
+            artifact: macos-binaries
+          - os: windows-latest
+            artifact: windows-binaries
+          - os: ubuntu-latest
+            artifact: linux-binaries
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: artifact/
+
+      - name: Extract artifact (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $sourcePath = "artifact"
+
+          # Get all .zip files from the sourcePath directory
+          $files = Get-ChildItem -Path $sourcePath -Recurse -Include "*.zip"
+
+          # Loop through each .zip file
+          foreach ($file in $files) {
+            # Extract the file to the current directory
+            Expand-Archive -Path $file.FullName -DestinationPath "." -Force
+          }
+
+      - name: Extract artifact (Linux/MacOS)
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          for file in artifact/*; do
+            tar -xf "$file"
+          done
+
+      - name: Create sample folder and copy foo.ts
+        shell: bash
+        run: |
+          rm -rf sample
+          mkdir sample
+          cp ./.github/foo.ts sample/foo.ts
+
+      - name: Test binary
+        shell: bash
+        run: |
+          DB_PATH=sample/ftaql.sqlite
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            ./ftaql.exe sample --db "$DB_PATH" --revision test-run --ref ci
+          else
+            ./ftaql sample --db "$DB_PATH" --revision test-run --ref ci
+          fi
+          python3 - <<'PY'
+          import sqlite3
+          db = sqlite3.connect("sample/ftaql.sqlite")
+          run_count = db.execute("select count(*) from analysis_runs").fetchone()[0]
+          file_count = db.execute("select count(*) from files").fetchone()[0]
+          revision = db.execute("select revision from analysis_runs").fetchone()[0]
+          file_path = db.execute("select file_path from files").fetchone()[0]
+          assert run_count == 1, run_count
+          assert file_count == 1, file_count
+          assert revision == "test-run", revision
+          assert file_path == "foo.ts", file_path
+          print("SQLite snapshot looks correct")
+          PY
+
+  publish_dry_run_nix:
+    needs: test_built_binaries
+    uses: ./.github/workflows/publish-dry-run.yml
+
+  wasm_dry_run:
+    needs: test_rust_crate
+    uses: ./.github/workflows/wasm-dry-run.yml
+
+  # This is a "trick", a meta task which does not change, and we can use in
+  # the protected branch rules as opposed to the tests one above which
+  # may change regularly.
+  validate-tests:
+    name: Tests status
+    runs-on: ubuntu-latest
+    needs:
+      - test_rust_crate
+      - build_binaries
+      - test_built_binaries
+      - publish_dry_run_nix
+      - wasm_dry_run
+    if: always()
+    steps:
+      - name: Successful run
+        if: ${{ !(contains(needs.*.result, 'failure')) }}
+        run: exit 0
+
+      - name: Failing run
+        if: ${{ contains(needs.*.result, 'failure') }}
+        run: exit 1

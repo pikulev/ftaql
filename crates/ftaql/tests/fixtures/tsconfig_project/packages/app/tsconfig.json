@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      // Re-define inherited paths to be relative to the new baseUrl
+      "@lib/*": ["../lib/src/*"],
+      "@lib/helpers": ["../lib/src/helpers.ts"],
+      "@lib/fallback/*": [
+        "../lib/src/non-existent-path/*",
+        "../lib/src/fallback/*"
+      ]
+    }
+  }
+} 

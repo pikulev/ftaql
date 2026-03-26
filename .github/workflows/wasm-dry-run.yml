@@ -1,0 +1,43 @@
+name: Build WASM Package (Dry Run)
+
+on: workflow_call
+
+jobs:
+  build_ftaql_wasm_dry_run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Add wasm target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked
+
+      - name: Build scoped WASM package
+        working-directory: crates/ftaql-wasm
+        run: |
+          rm -rf pkg
+          wasm-pack build --target web --scope piklv
+
+      - name: Verify generated npm package metadata
+        working-directory: crates/ftaql-wasm/pkg
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          package_json = json.loads(Path("package.json").read_text())
+          assert package_json["name"] == "@piklv/ftaql-wasm", package_json["name"]
+          assert package_json["version"] == "1.0.0", package_json["version"]
+          assert Path("ftaql_wasm.js").exists(), "ftaql_wasm.js missing"
+          assert Path("ftaql_wasm_bg.wasm").exists(), "ftaql_wasm_bg.wasm missing"
+          print("WASM dry-run package looks correct")
+          PY

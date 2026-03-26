@@ -1,0 +1,41 @@
+---
+source: crates/ftaql/tests/coupling_integration_test.rs
+expression: finding
+snapshot_kind: text
+---
+{
+  "file_name": "main.ts",
+  "size_metrics": {
+    "line_count": 4
+  },
+  "complexity_metrics": {
+    "cyclomatic": 1,
+    "halstead": {
+      "uniq_operators": 5,
+      "uniq_operands": 4,
+      "total_operators": 9,
+      "total_operands": 6,
+      "program_length": 15,
+      "vocabulary_size": 9,
+      "volume": 47.548875021634686,
+      "difficulty": 3.0,
+      "effort": 142.64662506490407,
+      "time": 7.924812503605782,
+      "bugs": 0.01584962500721156
+    }
+  },
+  "coupling_metrics": {
+    "afferent_coupling": 0,
+    "efferent_coupling": 2,
+    "instability": 1.0,
+    "dependency_strength": {
+      "app.ts": 1,
+      "logger.ts": 1
+    },
+    "cycles": {}
+  },
+  "scores": {
+    "file_score": 6.816121521724185,
+    "coupling_score": 133.1437221576519
+  }
+}

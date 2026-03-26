@@ -1,0 +1,6 @@
+---
+source: crates/ftaql/src/output/tests.rs
+expression: output
+---
+File,Num. lines,File Score,Coupling Score,Assessment
+test.ts,100,0.00,0.00,OK
