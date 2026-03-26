@@ -1,15 +1,22 @@
-use crate::resolve::ResolverCache;
 use crate::structs::{
-    ComplexityMetrics, CycleData, FileData, FtaQlConfigResolved, FtaQlJsonOutput, ProjectAnalysis,
-    Scores, SizeMetrics,
+    ComplexityMetrics, FileData, Scores, SizeMetrics,
 };
-use crate::utils::{
-    calculate_file_score, check_score_cap_breach, FileScoreFormula, ModuleScoreInput,
-};
+use crate::utils::{calculate_file_score, FileScoreFormula, ModuleScoreInput};
+#[cfg(feature = "project-analysis")]
+use crate::structs::{CycleData, FtaQlConfigResolved, FtaQlJsonOutput, ProjectAnalysis};
+#[cfg(feature = "project-analysis")]
+use crate::utils::check_score_cap_breach;
+#[cfg(feature = "project-analysis")]
+use crate::resolve::ResolverCache;
+#[cfg(feature = "project-analysis")]
 use rayon::prelude::*;
+#[cfg(feature = "project-analysis")]
 use std::collections::HashMap;
+#[cfg(feature = "project-analysis")]
 use std::fs;
+#[cfg(feature = "project-analysis")]
 use std::path::Path;
+#[cfg(feature = "project-analysis")]
 use std::sync::{Arc, Mutex};
 
 pub mod config;
@@ -17,12 +24,16 @@ pub mod coupling;
 pub mod cyclo;
 pub mod halstead;
 pub mod parse;
+#[cfg(feature = "project-analysis")]
 pub mod resolve;
+#[cfg(feature = "project-analysis")]
 pub mod sqlite;
 pub mod structs;
 pub mod utils;
+#[cfg(feature = "project-analysis")]
 pub mod walk;
 
+#[cfg(feature = "project-analysis")]
 pub fn analyze_project(path: &String, config: Option<FtaQlConfigResolved>) -> FtaQlJsonOutput {
     let fta_config: FtaQlConfigResolved =
         config.unwrap_or_else(|| crate::config::get_default_config());

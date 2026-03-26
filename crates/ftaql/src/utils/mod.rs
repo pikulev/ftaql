@@ -1,13 +1,16 @@
-use crate::structs::FtaQlConfigResolved;
 use crate::structs::HalsteadMetrics;
-use globset::{Glob, GlobSetBuilder};
-use ignore::DirEntry;
 use log::warn;
 use std::path::Path;
+#[cfg(feature = "project-analysis")]
+use ignore::DirEntry;
+#[cfg(feature = "project-analysis")]
+use crate::structs::FtaQlConfigResolved;
 
 // Удаляю все вызовы is_excluded_filename (функция удалена)
 
+#[cfg(feature = "project-analysis")]
 pub fn is_valid_file(repo_path: &String, entry: &DirEntry, config: &FtaQlConfigResolved) -> bool {
+    let _ = repo_path;
     if !entry.file_type().map_or(false, |ft| ft.is_file()) {
         return false;
     }

@@ -1,22 +1,28 @@
-use log::debug;
-use rspack_resolver::Resolver;
 use std::cell::Cell;
+#[cfg(feature = "project-analysis")]
 use std::path::PathBuf;
+use crate::structs::{ExportInfo, ImportInfo};
 use swc_common::comments::Comment;
 use swc_common::sync::Lrc;
 use swc_common::{comments::Comments, input::SourceFileInput, BytePos, SourceMap};
-use swc_ecma_ast::{
-    EsVersion, ExportDecl, ExportDefaultDecl, ExportDefaultExpr, FnDecl, ImportSpecifier, Module,
-    TsInterfaceDecl, TsTypeAliasDecl, VarDecl,
-};
+use swc_ecma_ast::{EsVersion, Module};
+#[cfg(feature = "project-analysis")]
+use log::debug;
+#[cfg(feature = "project-analysis")]
+use rspack_resolver::Resolver;
+#[cfg(feature = "project-analysis")]
+use crate::structs::ExportKind;
+#[cfg(feature = "project-analysis")]
+use swc_ecma_ast::{ExportDecl, ExportDefaultDecl, ExportDefaultExpr, ImportSpecifier};
 use swc_ecma_parser::{error::Error, lexer::Lexer, Parser, Syntax, TsConfig};
+#[cfg(feature = "project-analysis")]
 use swc_ecma_visit::{Visit, VisitWith};
+#[cfg(feature = "project-analysis")]
 use tokio::runtime::Runtime;
-
-use crate::structs::{ExportInfo, ExportKind, ImportInfo};
 
 mod tests;
 
+#[cfg(feature = "project-analysis")]
 #[derive(Clone)]
 struct AstVisitor<'a> {
     imports: Vec<ImportInfo>,
@@ -27,6 +33,7 @@ struct AstVisitor<'a> {
     project_root: &'a str,
 }
 
+#[cfg(feature = "project-analysis")]
 impl<'a> AstVisitor<'a> {
     fn resolve_dependency(&self, specifier: &str) -> Option<String> {
         if specifier.starts_with("http://") || specifier.starts_with("https://") {
@@ -58,6 +65,7 @@ impl<'a> AstVisitor<'a> {
     }
 }
 
+#[cfg(feature = "project-analysis")]
 impl Visit for AstVisitor<'_> {
     fn visit_import_decl(&mut self, n: &swc_ecma_ast::ImportDecl) {
         if let Some(resolved_path) = self.resolve_dependency(&n.src.value) {
@@ -172,15 +180,11 @@ impl Visit for AstVisitor<'_> {
             swc_ecma_ast::Decl::TsEnum(e) => {
                 self.exports.push(ExportInfo {
                     name: e.id.sym.to_string(),
-                    kind: ExportKind::Value, // Enums are runtime objects
+                    kind: ExportKind::Value,
                 });
             }
-            swc_ecma_ast::Decl::TsModule(_) => {
-                // Not handling module exports for now
-            }
-            _ => {
-                // Other declaration types are not exports
-            }
+            swc_ecma_ast::Decl::TsModule(_) => {}
+            _ => {}
         }
         n.visit_children_with(self);
     }
@@ -282,6 +286,7 @@ fn count_lines(source: &str, comments_count: usize, include_comments: bool) -> u
 /// 2. `Vec<ImportInfo>` - A vector of resolved import/export dependencies.
 /// 3. `usize` - The calculated number of lines in the file (excluding empty lines and optionally comments).
 /// 4. `String` - The full source code of the file.
+#[cfg(feature = "project-analysis")]
 pub fn parse_module(
     file_path: &str,
     resolver: &Resolver,

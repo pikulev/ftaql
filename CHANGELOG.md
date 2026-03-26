@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.1
+
+Patch release to unblock npm publication after the existing `v1.0.0` versions were already published.
+
+### Highlights
+
+- Fix the WASM package build by separating browser-safe analysis APIs from native-only project analysis code
+- Keep CLI and native project analysis enabled by default while allowing `ftaql-wasm` to compile without Tokio networking dependencies
+- Prepare a fresh release version across Rust crates and npm packages
+
 ## v1.0.0
 
 First stable release of FtaQl.
