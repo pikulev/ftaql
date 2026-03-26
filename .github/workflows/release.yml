@@ -41,17 +41,17 @@ jobs:
           prerelease: false
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-binaries
 
       - name: Download windows artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-binaries
 
       - name: Download linux artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-binaries
 
@@ -102,19 +102,19 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Download macOS artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: macos-binaries
           path: artifact/
 
       - name: Download linux artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-binaries
           path: artifact/
 
       - name: Download windows artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: windows-binaries
           path: artifact/
