@@ -237,6 +237,8 @@ console.log(output);
 - `include_comments`
 - `exclude_under`
 
+При анализе проекта FtaQl также учитывает `.gitignore`. Поэтому `node_modules` обычно пропускается автоматически, если уже игнорируется git-правилами. Если каталог не покрыт `.gitignore`, добавьте его в `exclude_directories`. Подробности см. в [`docs/configuration/ru.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/ru.md).
+
 При разрешении импортов FtaQl также автоматически обнаруживает `tsconfig.json` и `jsconfig.json`. Поддерживаются:
 
 - `compilerOptions.paths`

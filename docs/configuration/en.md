@@ -47,6 +47,10 @@ This affects dependency resolution and coupling analysis correctness.
 
 ## Important caveats
 
+- The default `exclude_directories` only include `/dist`, `/bin`, and `/build`.
+- During project-level analysis, FtaQl separately applies `.gitignore` and git exclude rules in addition to `ftaql.json`.
+- This means `node_modules` is often skipped automatically when it is already ignored by git rules, but it is not part of the default `exclude_directories`.
+- If a directory is not covered by `.gitignore` and you still want to skip it, add it explicitly to `exclude_directories`.
 - `include_comments` affects `line_count`, which also affects `file_score`.
 - `score_cap` exits the process with code `1` when a file exceeds the threshold.
 - `exclude_under` is part of the public config and is persisted into SQLite, but the current pipeline does not apply it during traversal or file filtering.
