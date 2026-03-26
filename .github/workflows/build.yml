@@ -58,7 +58,7 @@ jobs:
           tar czvf ftaql-aarch64-apple-darwin.tar.gz -C target/aarch64-apple-darwin/release ftaql
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-binaries
           path: |
@@ -110,7 +110,7 @@ jobs:
           Compress-Archive -Path target/aarch64-pc-windows-msvc/release/ftaql.exe -DestinationPath ftaql-aarch64-pc-windows-msvc.zip
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-binaries
           path: |
@@ -166,7 +166,7 @@ jobs:
           done
 
       - name: Upload binaries as artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-binaries
           path: |
