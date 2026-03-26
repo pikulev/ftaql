@@ -1,6 +1,6 @@
 {
   "name": "@piklv/ftaql-cli",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "FtaQl is a super-fast TypeScript static analysis tool written in Rust",
   "repository": {
     "type": "git",

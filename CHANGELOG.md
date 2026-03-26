@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.0.2
+
+Patch release focused on release automation hardening, dependency refreshes, and documentation cleanup.
+
+### Highlights
+
+- Tighten release validation and publishing automation for GitHub Releases, crates.io, npm CLI, and the WASM approval flow
+- Align core Rust dependencies, including the SWC visitor stack and `petgraph`, to keep the stable release line current
+- Refine README and maintenance documentation for the published CLI and release process
+
 ## v1.0.1
 
 Patch release to unblock npm publication after the existing `v1.0.0` versions were already published.
