@@ -7,6 +7,7 @@ use std::path::Path;
 #[test]
 fn coupling_analysis_on_sample_project() {
     let project_path = "tests/fixtures/sample_project";
+    let snapshot_path = Path::new("fixtures").join("snapshots");
     let fta_config = FtaQlConfigResolved {
         extensions: vec![".ts".to_string(), ".tsx".to_string()],
         exclude_filenames: vec![],
@@ -21,7 +22,7 @@ fn coupling_analysis_on_sample_project() {
 
     for finding in analysis_result.findings {
         let mut settings = insta::Settings::new();
-        settings.set_snapshot_path(Path::new(project_path).join("..").join("snapshots"));
+        settings.set_snapshot_path(&snapshot_path);
         settings.set_snapshot_suffix(finding.file_name.replace("/", "@"));
         settings.bind(|| {
             insta::assert_json_snapshot!(finding.file_name.clone(), finding);
