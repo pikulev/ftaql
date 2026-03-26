@@ -6,7 +6,11 @@ FtaQl helps you see where risk is actually accumulating in a TS/JS project. It w
 
 After one run you can ask which files stay expensive across revisions, where coupling keeps growing, and when runtime cycles first appeared. That makes it useful for refactors, CI, and history analysis when you need an accumulated dataset instead of a one-off report.
 
-The core is written in Rust, so repeated runs across large codebases and revision history stay practical. On Apple M1 hardware FtaQl can analyze up to **3000 files per second**.
+FtaQl started as a fork of [`sgb-io/fta`](https://github.com/sgb-io/fta) and gradually grew into its own continuation of that idea. I am grateful to that project for the original inspiration and for making it possible to take the idea further.
+
+---
+
+The core is written in Rust, so repeated runs across large codebases and revision history stay practical. On Apple M1 hardware FtaQl can analyze up to **10000 files per second**.
 
 ## What FtaQl Collects
 
