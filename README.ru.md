@@ -1,6 +1,6 @@
 # FtaQl
 
-[English](https://github.com/pikulev/ftaql/blob/main/README.md) | [Русский](https://github.com/pikulev/ftaql/blob/main/README.ru.md)
+[English](https://github.com/pikulev/ftaql/blob/main/packages/ftaql/README.md) | [Русский](https://github.com/pikulev/ftaql/blob/main/README.ru.md)
 
 FtaQl помогает быстро увидеть, где в TS/JS-проекте реально копится риск. Он проходит по репозиторию, сохраняет снимок в SQLite и превращает анализ кода в обычные SQL-запросы вместо гадания по ощущениям.
 
