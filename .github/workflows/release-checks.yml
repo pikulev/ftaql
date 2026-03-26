@@ -1,0 +1,87 @@
+name: Release Checks
+
+on:
+  workflow_call:
+    inputs:
+      expected_tag:
+        description: "Optional tag that must match the aligned artifact version."
+        required: false
+        type: string
+        default: ""
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  validate_release_manifest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify aligned publish versions
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import tomllib
+          from pathlib import Path
+
+          workspace_root = Path(".")
+          version_sources = {
+              "package.json": json.loads((workspace_root / "package.json").read_text())["version"],
+              "packages/ftaql/package.json": json.loads((workspace_root / "packages/ftaql/package.json").read_text())["version"],
+              "crates/ftaql/Cargo.toml": tomllib.loads((workspace_root / "crates/ftaql/Cargo.toml").read_text())["package"]["version"],
+              "crates/ftaql-wasm/Cargo.toml": tomllib.loads((workspace_root / "crates/ftaql-wasm/Cargo.toml").read_text())["package"]["version"],
+          }
+
+          versions = set(version_sources.values())
+          if len(versions) != 1:
+              details = "\n".join(f"{path}: {version}" for path, version in version_sources.items())
+              raise SystemExit(f"Publish versions are misaligned:\n{details}")
+
+          release_version = next(iter(versions))
+          expected_tag = os.environ.get("EXPECTED_TAG", "").strip()
+          if expected_tag:
+              normalized_tag = expected_tag[1:] if expected_tag.startswith("v") else expected_tag
+              if normalized_tag != release_version:
+                  raise SystemExit(
+                      f"Release tag {expected_tag!r} does not match aligned version {release_version!r}"
+                  )
+
+          print(f"Aligned publish version: {release_version}")
+          PY
+        env:
+          EXPECTED_TAG: ${{ inputs.expected_tag }}
+
+  rust_quality_gate:
+    runs-on: ubuntu-latest
+    needs: validate_release_manifest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          components: rustfmt
+          override: true
+
+      - name: Basic build validation
+        run: cargo build
+
+      - name: Check program
+        run: cargo check
+
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run tests
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all-features

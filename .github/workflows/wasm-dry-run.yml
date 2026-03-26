@@ -1,6 +1,18 @@
-name: Build WASM Package (Dry Run)
+name: Build WASM Package
 
-on: workflow_call
+on:
+  workflow_call:
+    inputs:
+      upload_artifact:
+        description: "Upload the generated pkg directory as a workflow artifact."
+        required: false
+        type: boolean
+        default: false
+      artifact_name:
+        description: "Artifact name to use when upload_artifact is enabled."
+        required: false
+        type: string
+        default: "ftaql-wasm-pkg"
 
 jobs:
   build_ftaql_wasm_dry_run:
@@ -46,3 +58,10 @@ jobs:
           assert Path("ftaql_wasm_bg.wasm").exists(), "ftaql_wasm_bg.wasm missing"
           print("WASM dry-run package looks correct")
           PY
+
+      - name: Upload generated WASM package
+        if: ${{ inputs.upload_artifact }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: crates/ftaql-wasm/pkg/*

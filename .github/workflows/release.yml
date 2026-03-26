@@ -13,11 +13,24 @@ env:
   CARGO_INCREMENTAL: 0
 
 jobs:
+  release_checks:
+    uses: ./.github/workflows/release-checks.yml
+    with:
+      expected_tag: ${{ github.ref_name }}
+
   call_build_binaries:
+    needs: release_checks
     uses: ./.github/workflows/build.yml
 
+  build_wasm_package:
+    needs: release_checks
+    uses: ./.github/workflows/wasm-dry-run.yml
+    with:
+      upload_artifact: true
+      artifact_name: ftaql-wasm-pkg
+
   create_github_release:
-    needs: [call_build_binaries]
+    needs: [call_build_binaries, build_wasm_package]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -69,7 +82,7 @@ jobs:
 
   publish_rust_crate:
     runs-on: ubuntu-latest
-    needs: [create_github_release]
+    needs: [release_checks, create_github_release]
     steps:
       - uses: actions/checkout@v4
       - name: Update packages
@@ -89,7 +102,7 @@ jobs:
         working-directory: crates/ftaql
 
   publish_ftaql_cli:
-    needs: [create_github_release]
+    needs: [release_checks, create_github_release]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -142,5 +155,36 @@ jobs:
       - name: Publish to npm
         run: npm publish --access public
         working-directory: packages/ftaql
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  approve_wasm_publish:
+    runs-on: ubuntu-latest
+    needs: [publish_rust_crate, publish_ftaql_cli, build_wasm_package]
+    environment:
+      name: wasm-publish
+    steps:
+      - name: Await manual approval
+        run: echo "WASM publish approved"
+
+  publish_ftaql_wasm:
+    runs-on: ubuntu-latest
+    needs: [build_wasm_package, approve_wasm_publish]
+    steps:
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Download generated WASM package
+        uses: actions/download-artifact@v4
+        with:
+          name: ftaql-wasm-pkg
+          path: crates/ftaql-wasm/pkg
+
+      - name: Publish WASM package to npm
+        run: npm publish --access public
+        working-directory: crates/ftaql-wasm/pkg
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
