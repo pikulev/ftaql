@@ -1,20 +1,20 @@
+#[cfg(feature = "project-analysis")]
+use crate::structs::ExportKind;
+use crate::structs::{ExportInfo, ImportInfo};
+#[cfg(feature = "project-analysis")]
+use log::debug;
+#[cfg(feature = "project-analysis")]
+use rspack_resolver::Resolver;
 use std::cell::Cell;
 #[cfg(feature = "project-analysis")]
 use std::path::PathBuf;
-use crate::structs::{ExportInfo, ImportInfo};
 use swc_common::comments::Comment;
 use swc_common::sync::Lrc;
 use swc_common::{comments::Comments, input::SourceFileInput, BytePos, SourceMap};
 use swc_ecma_ast::{EsVersion, Module};
 #[cfg(feature = "project-analysis")]
-use log::debug;
-#[cfg(feature = "project-analysis")]
-use rspack_resolver::Resolver;
-#[cfg(feature = "project-analysis")]
-use crate::structs::ExportKind;
-#[cfg(feature = "project-analysis")]
 use swc_ecma_ast::{ExportDecl, ExportDefaultDecl, ExportDefaultExpr, ImportSpecifier};
-use swc_ecma_parser::{error::Error, lexer::Lexer, Parser, Syntax, TsConfig};
+use swc_ecma_parser::{error::Error, lexer::Lexer, Parser, Syntax, TsSyntax};
 #[cfg(feature = "project-analysis")]
 use swc_ecma_visit::{Visit, VisitWith};
 #[cfg(feature = "project-analysis")]
@@ -231,7 +231,7 @@ fn _parse(
     comments: &CountingComments,
     use_tsx: bool,
 ) -> Result<Module, Error> {
-    let ts_config = TsConfig {
+    let ts_config = TsSyntax {
         tsx: use_tsx,
         decorators: false,
         dts: false,
@@ -363,7 +363,7 @@ pub fn parse_module_from_string(
     let code: String = source.lines().collect::<Vec<_>>().join("\n");
 
     let fm = cm.new_source_file(
-        swc_common::FileName::Custom("input.ts".to_string()),
+        swc_common::FileName::Custom("input.ts".to_string()).into(),
         code.clone(),
     );
 

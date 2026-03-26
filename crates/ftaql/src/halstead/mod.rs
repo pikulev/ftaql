@@ -319,6 +319,58 @@ impl Visit for AstAnalyzer {
         self.total_operands += 1;
     }
 
+    fn visit_private_name(&mut self, node: &PrivateName) {
+        self.unique_operands.insert(node.name.to_string());
+        self.total_operands += 1;
+    }
+
+    fn visit_member_prop(&mut self, node: &MemberProp) {
+        match node {
+            MemberProp::Ident(ident) => {
+                self.unique_operands.insert(ident.sym.to_string());
+                self.total_operands += 1;
+            }
+            _ => node.visit_children_with(self),
+        }
+    }
+
+    fn visit_prop_name(&mut self, node: &PropName) {
+        match node {
+            PropName::Ident(ident) => {
+                self.unique_operands.insert(ident.sym.to_string());
+                self.total_operands += 1;
+            }
+            _ => node.visit_children_with(self),
+        }
+    }
+
+    fn visit_simple_assign_target(&mut self, node: &SimpleAssignTarget) {
+        match node {
+            SimpleAssignTarget::Member(member) => {
+                if let MemberProp::Ident(ident) = &member.prop {
+                    self.unique_operands.insert(ident.sym.to_string());
+                    self.total_operands += 1;
+                }
+
+                node.visit_children_with(self);
+            }
+            _ => node.visit_children_with(self),
+        }
+    }
+
+    fn visit_opt_chain_base(&mut self, node: &OptChainBase) {
+        if let OptChainBase::Member(member) = node {
+            if matches!(member.obj.as_ref(), Expr::OptChain(_)) {
+                if let MemberProp::Ident(ident) = &member.prop {
+                    self.unique_operands.insert(ident.sym.to_string());
+                    self.total_operands += 1;
+                }
+            }
+        }
+
+        node.visit_children_with(self);
+    }
+
     fn visit_tpl(&mut self, node: &Tpl) {
         self.unique_operators.insert("Template String".to_string());
         self.total_operators += 1;

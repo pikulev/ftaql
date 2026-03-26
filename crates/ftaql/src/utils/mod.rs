@@ -1,10 +1,10 @@
-use crate::structs::HalsteadMetrics;
-use log::warn;
-use std::path::Path;
-#[cfg(feature = "project-analysis")]
-use ignore::DirEntry;
 #[cfg(feature = "project-analysis")]
 use crate::structs::FtaQlConfigResolved;
+use crate::structs::HalsteadMetrics;
+#[cfg(feature = "project-analysis")]
+use ignore::DirEntry;
+use log::warn;
+use std::path::Path;
 
 // Удаляю все вызовы is_excluded_filename (функция удалена)
 

@@ -1,13 +1,11 @@
-use crate::structs::{
-    ComplexityMetrics, FileData, Scores, SizeMetrics,
-};
-use crate::utils::{calculate_file_score, FileScoreFormula, ModuleScoreInput};
+#[cfg(feature = "project-analysis")]
+use crate::resolve::ResolverCache;
+use crate::structs::{ComplexityMetrics, FileData, Scores, SizeMetrics};
 #[cfg(feature = "project-analysis")]
 use crate::structs::{CycleData, FtaQlConfigResolved, FtaQlJsonOutput, ProjectAnalysis};
 #[cfg(feature = "project-analysis")]
 use crate::utils::check_score_cap_breach;
-#[cfg(feature = "project-analysis")]
-use crate::resolve::ResolverCache;
+use crate::utils::{calculate_file_score, FileScoreFormula, ModuleScoreInput};
 #[cfg(feature = "project-analysis")]
 use rayon::prelude::*;
 #[cfg(feature = "project-analysis")]
