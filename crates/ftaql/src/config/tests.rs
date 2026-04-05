@@ -14,9 +14,8 @@ mod tests {
     fn test_read_config_with_valid_json() {
         let valid_json = r#"
     {
-        "extensions": [".foo.ts"],
-        "exclude_filenames": [".bar.ts"],
-        "exclude_directories": ["/baz"],
+        "includes": ["**/*.foo.ts"],
+        "excludes": ["**/*.bar.ts", "baz/**"],
         "exclude_under": 10,
         "score_cap": 500,
         "include_comments": true
@@ -27,33 +26,10 @@ mod tests {
         let path = temp_file.path().to_str().unwrap();
         let config = read_config(path.to_string(), false).unwrap();
 
+        assert_eq!(config.includes, vec!["**/*.foo.ts".to_string()]);
         assert_eq!(
-            config.extensions,
-            vec![
-                ".js".to_string(),
-                ".jsx".to_string(),
-                ".ts".to_string(),
-                ".tsx".to_string(),
-                ".foo.ts".to_string()
-            ]
-        );
-        assert_eq!(
-            config.exclude_filenames,
-            vec![
-                ".d.ts".to_string(),
-                ".min.js".to_string(),
-                ".bundle.js".to_string(),
-                ".bar.ts".to_string()
-            ]
-        );
-        assert_eq!(
-            config.exclude_directories,
-            vec![
-                "/dist".to_string(),
-                "/bin".to_string(),
-                "/build".to_string(),
-                "/baz".to_string(),
-            ]
+            config.excludes,
+            vec!["**/*.bar.ts".to_string(), "baz/**".to_string()]
         );
         assert_eq!(config.score_cap, 500);
         assert_eq!(config.include_comments, true);
@@ -63,8 +39,7 @@ mod tests {
     fn test_read_config_with_partial_json() {
         let partial_json = r#"
     {
-        "extensions": [".foo.ts"],
-        "exclude_filenames": [".bar.ts"]
+        "includes": ["**/*.foo.ts"]
     }
     "#;
 
@@ -72,31 +47,16 @@ mod tests {
         let path = temp_file.path().to_str().unwrap();
         let config = read_config(path.to_string(), false).unwrap();
 
+        assert_eq!(config.includes, vec!["**/*.foo.ts".to_string()]);
         assert_eq!(
-            config.extensions,
+            config.excludes,
             vec![
-                ".js".to_string(),
-                ".jsx".to_string(),
-                ".ts".to_string(),
-                ".tsx".to_string(),
-                ".foo.ts".to_string()
-            ]
-        );
-        assert_eq!(
-            config.exclude_filenames,
-            vec![
-                ".d.ts".to_string(),
-                ".min.js".to_string(),
-                ".bundle.js".to_string(),
-                ".bar.ts".to_string()
-            ]
-        );
-        assert_eq!(
-            config.exclude_directories,
-            vec![
-                "/dist".to_string(),
-                "/bin".to_string(),
-                "/build".to_string(),
+                "**/*.d.ts".to_string(),
+                "**/*.min.js".to_string(),
+                "**/*.bundle.js".to_string(),
+                "dist/**".to_string(),
+                "bin/**".to_string(),
+                "build/**".to_string(),
             ]
         );
         assert_eq!(config.score_cap, 1000);
@@ -110,28 +70,23 @@ mod tests {
         let config = read_config(nonexistent_path.to_string(), false).unwrap();
 
         assert_eq!(
-            config.extensions,
+            config.includes,
             vec![
-                ".js".to_string(),
-                ".jsx".to_string(),
-                ".ts".to_string(),
-                ".tsx".to_string(),
+                "**/*.js".to_string(),
+                "**/*.jsx".to_string(),
+                "**/*.ts".to_string(),
+                "**/*.tsx".to_string(),
             ]
         );
         assert_eq!(
-            config.exclude_filenames,
+            config.excludes,
             vec![
-                ".d.ts".to_string(),
-                ".min.js".to_string(),
-                ".bundle.js".to_string(),
-            ]
-        );
-        assert_eq!(
-            config.exclude_directories,
-            vec![
-                "/dist".to_string(),
-                "/bin".to_string(),
-                "/build".to_string(),
+                "**/*.d.ts".to_string(),
+                "**/*.min.js".to_string(),
+                "**/*.bundle.js".to_string(),
+                "dist/**".to_string(),
+                "bin/**".to_string(),
+                "build/**".to_string(),
             ]
         );
         assert_eq!(config.score_cap, 1000);
@@ -142,9 +97,8 @@ mod tests {
     fn test_read_config_with_user_specified_file_path() {
         let valid_json = r#"
     {
-        "extensions": [".foo.ts"],
-        "exclude_filenames": [".bar.ts"],
-        "exclude_directories": ["/baz"],
+        "includes": ["**/*.foo.ts"],
+        "excludes": ["**/*.bar.ts", "baz/**"],
         "score_cap": 500
     }
     "#;
@@ -154,33 +108,10 @@ mod tests {
 
         let config = read_config(path.to_string(), true).unwrap();
 
+        assert_eq!(config.includes, vec!["**/*.foo.ts".to_string()]);
         assert_eq!(
-            config.extensions,
-            vec![
-                ".js".to_string(),
-                ".jsx".to_string(),
-                ".ts".to_string(),
-                ".tsx".to_string(),
-                ".foo.ts".to_string(),
-            ]
-        );
-        assert_eq!(
-            config.exclude_filenames,
-            vec![
-                ".d.ts".to_string(),
-                ".min.js".to_string(),
-                ".bundle.js".to_string(),
-                ".bar.ts".to_string(),
-            ]
-        );
-        assert_eq!(
-            config.exclude_directories,
-            vec![
-                "/dist".to_string(),
-                "/bin".to_string(),
-                "/build".to_string(),
-                "/baz".to_string(),
-            ]
+            config.excludes,
+            vec!["**/*.bar.ts".to_string(), "baz/**".to_string()]
         );
         assert_eq!(config.score_cap, 500);
         assert_eq!(config.include_comments, false);
