@@ -5,11 +5,7 @@ use std::collections::HashSet;
 fn file_names(config: FtaQlConfigResolved) -> HashSet<String> {
     let project_path = "tests/fixtures/filter_project";
     let result = analyze_project(&project_path.to_string(), Some(config));
-    result
-        .findings
-        .into_iter()
-        .map(|f| f.file_name)
-        .collect()
+    result.findings.into_iter().map(|f| f.file_name).collect()
 }
 
 #[test]
