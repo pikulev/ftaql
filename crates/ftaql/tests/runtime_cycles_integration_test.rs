@@ -6,9 +6,8 @@ use insta;
 fn test_runtime_cycle_detection() {
     let project_path_str = "tests/fixtures/runtime_cycles_project";
     let fta_config = FtaQlConfigResolved {
-        extensions: vec!["ts".to_string()],
-        exclude_filenames: vec![],
-        exclude_directories: vec![],
+        includes: vec!["**/*.ts".to_string()],
+        excludes: vec![],
         score_cap: 100,
         include_comments: false,
         exclude_under: 0,

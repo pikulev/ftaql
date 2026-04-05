@@ -718,9 +718,8 @@ mod tests {
 
     fn sample_config() -> FtaQlConfigResolved {
         FtaQlConfigResolved {
-            extensions: vec![".ts".to_string()],
-            exclude_filenames: vec![],
-            exclude_directories: vec![],
+            includes: vec!["**/*.ts".to_string()],
+            excludes: vec![],
             score_cap: 1000,
             include_comments: false,
             exclude_under: 0,

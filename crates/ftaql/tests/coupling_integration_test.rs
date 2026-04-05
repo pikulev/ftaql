@@ -9,9 +9,8 @@ fn coupling_analysis_on_sample_project() {
     let project_path = "tests/fixtures/sample_project";
     let snapshot_path = Path::new("fixtures").join("snapshots");
     let fta_config = FtaQlConfigResolved {
-        extensions: vec![".ts".to_string(), ".tsx".to_string()],
-        exclude_filenames: vec![],
-        exclude_directories: vec![],
+        includes: vec!["**/*.ts".to_string(), "**/*.tsx".to_string()],
+        excludes: vec![],
         score_cap: 100,
         include_comments: false,
         exclude_under: 0,
@@ -34,9 +33,8 @@ fn coupling_analysis_on_sample_project() {
 fn tsconfig_paths_resolution() {
     let project_path = "tests/fixtures/tsconfig_project";
     let fta_config = FtaQlConfigResolved {
-        extensions: vec![".ts".to_string(), ".tsx".to_string()],
-        exclude_filenames: vec![],
-        exclude_directories: vec![],
+        includes: vec!["**/*.ts".to_string(), "**/*.tsx".to_string()],
+        excludes: vec![],
         score_cap: 100,
         include_comments: false,
         exclude_under: 0,
@@ -51,9 +49,8 @@ fn tsconfig_paths_resolution() {
 fn ordered_cycle_reporting() {
     let project_path = "tests/fixtures/large_cycle_project";
     let fta_config = FtaQlConfigResolved {
-        extensions: vec![".js".to_string()],
-        exclude_filenames: vec![],
-        exclude_directories: vec![],
+        includes: vec!["**/*.js".to_string()],
+        excludes: vec![],
         score_cap: 100,
         include_comments: false,
         exclude_under: 0,

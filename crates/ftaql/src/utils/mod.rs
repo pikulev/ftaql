@@ -9,14 +9,8 @@ use std::path::Path;
 // Удаляю все вызовы is_excluded_filename (функция удалена)
 
 #[cfg(feature = "project-analysis")]
-pub fn is_valid_file(repo_path: &String, entry: &DirEntry, config: &FtaQlConfigResolved) -> bool {
-    let _ = repo_path;
-    if !entry.file_type().map_or(false, |ft| ft.is_file()) {
-        return false;
-    }
-    let file_name = entry.path().file_name().unwrap().to_str().unwrap();
-    // Оставляем только проверку расширения
-    config.extensions.iter().any(|ext| file_name.ends_with(ext))
+pub fn is_valid_file(_repo_path: &String, entry: &DirEntry, _config: &FtaQlConfigResolved) -> bool {
+    entry.file_type().map_or(false, |ft| ft.is_file())
 }
 
 pub fn warn_about_language(file_name: &str, use_tsx: bool) {

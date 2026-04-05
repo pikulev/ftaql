@@ -41,19 +41,11 @@ pub fn analyze_project(path: &String, config: Option<FtaQlConfigResolved>) -> Ft
 
     // First pass: collect all imports
     let mut override_builder = ignore::overrides::OverrideBuilder::new(&repo_path);
-    for excl_dir in &fta_config.exclude_directories {
-        // Преобразуем в паттерн для исключения директории
-        let pat = format!(
-            "!{}{}",
-            excl_dir.trim_end_matches('/'),
-            if excl_dir.ends_with('/') { "**" } else { "/**" }
-        );
-        override_builder.add(&pat).unwrap();
+    for inc in &fta_config.includes {
+        override_builder.add(inc).unwrap();
     }
-    for excl_file in &fta_config.exclude_filenames {
-        // Преобразуем в паттерн для исключения файла по имени
-        let pat = format!("!**/{}", excl_file);
-        override_builder.add(&pat).unwrap();
+    for exc in &fta_config.excludes {
+        override_builder.add(&format!("!{}", exc)).unwrap();
     }
     let overrides = override_builder.build().unwrap();
     let mut walk_builder_base = ignore::WalkBuilder::new(&repo_path);
