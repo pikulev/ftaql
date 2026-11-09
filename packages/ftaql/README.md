@@ -230,14 +230,13 @@ By default, the native CLI looks for `ftaql.json` in the analyzed project root. 
 
 The `ftaql.json` file controls analysis behavior such as:
 
-- `extensions`
-- `exclude_filenames`
-- `exclude_directories`
+- `includes` — glob patterns for files to include
+- `excludes` — glob patterns for files to exclude
 - `score_cap`
 - `include_comments`
 - `exclude_under`
 
-During project-level analysis, FtaQl also respects `.gitignore`. That means `node_modules` is usually skipped automatically when it is already ignored by git rules. If a directory is not covered by `.gitignore`, add it to `exclude_directories`. See [`docs/configuration/en.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/en.md) for details.
+During project-level analysis, FtaQl also respects `.gitignore`. That means `node_modules` is usually skipped automatically when it is already ignored by git rules. If a directory is not covered by `.gitignore`, add it to `excludes`. See [`docs/configuration/en.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/en.md) for details.
 
 FtaQl also auto-detects `tsconfig.json` and `jsconfig.json` files when resolving imports. It supports:
 

@@ -230,14 +230,13 @@ console.log(output);
 
 Файл `ftaql.json` управляет поведением анализа. Например, в нём можно настроить:
 
-- `extensions`
-- `exclude_filenames`
-- `exclude_directories`
+- `includes` — glob-паттерны для включения файлов
+- `excludes` — glob-паттерны для исключения файлов
 - `score_cap`
 - `include_comments`
 - `exclude_under`
 
-При анализе проекта FtaQl также учитывает `.gitignore`. Поэтому `node_modules` обычно пропускается автоматически, если уже игнорируется git-правилами. Если каталог не покрыт `.gitignore`, добавьте его в `exclude_directories`. Подробности см. в [`docs/configuration/ru.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/ru.md).
+При анализе проекта FtaQl также учитывает `.gitignore`. Поэтому `node_modules` обычно пропускается автоматически, если уже игнорируется git-правилами. Если каталог не покрыт `.gitignore`, добавьте его в `excludes`. Подробности см. в [`docs/configuration/ru.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/ru.md).
 
 При разрешении импортов FtaQl также автоматически обнаруживает `tsconfig.json` и `jsconfig.json`. Поддерживаются:
 

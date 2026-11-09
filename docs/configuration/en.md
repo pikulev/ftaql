@@ -12,25 +12,33 @@ If the config path is not explicitly provided and the file is missing, FtaQl fal
 
 ## Supported fields
 
-- `extensions`
-- `exclude_filenames`
-- `exclude_directories`
+- `includes` — glob patterns for files to include in analysis
+- `excludes` — glob patterns for files to exclude from analysis
 - `score_cap`
 - `include_comments`
 - `exclude_under`
 
+## Example config
+
+```json
+{
+  "includes": ["**/*.ts", "**/*.tsx"],
+  "excludes": ["**/*.d.ts", "dist/**", "__tests__/**"],
+  "score_cap": 1000
+}
+```
+
 ## Default values
 
-- `extensions`: `.js`, `.jsx`, `.ts`, `.tsx`
-- `exclude_filenames`: `.d.ts`, `.min.js`, `.bundle.js`
-- `exclude_directories`: `/dist`, `/bin`, `/build`
+- `includes`: `**/*.js`, `**/*.jsx`, `**/*.ts`, `**/*.tsx`
+- `excludes`: `**/*.d.ts`, `**/*.min.js`, `**/*.bundle.js`, `dist/**`, `bin/**`, `build/**`
 - `score_cap`: `1000`
 - `include_comments`: `false`
 - `exclude_under`: `6`
 
-## Merge behavior
+## Override behavior
 
-- `extensions`, `exclude_filenames`, and `exclude_directories` are appended to the defaults.
+- `includes` and `excludes`, when provided, **replace** the defaults entirely.
 - `score_cap`, `include_comments`, and `exclude_under` override defaults.
 - The resolved config is serialized and stored in SQLite as `analysis_runs.config_json`.
 
@@ -47,10 +55,9 @@ This affects dependency resolution and coupling analysis correctness.
 
 ## Important caveats
 
-- The default `exclude_directories` only include `/dist`, `/bin`, and `/build`.
 - During project-level analysis, FtaQl separately applies `.gitignore` and git exclude rules in addition to `ftaql.json`.
-- This means `node_modules` is often skipped automatically when it is already ignored by git rules, but it is not part of the default `exclude_directories`.
-- If a directory is not covered by `.gitignore` and you still want to skip it, add it explicitly to `exclude_directories`.
+- This means `node_modules` is often skipped automatically when it is already ignored by git rules, but it is not part of the default `excludes`.
+- If a directory is not covered by `.gitignore` and you still want to skip it, add it to `excludes`.
 - `include_comments` affects `line_count`, which also affects `file_score`.
 - `score_cap` exits the process with code `1` when a file exceeds the threshold.
 - `exclude_under` is part of the public config and is persisted into SQLite, but the current pipeline does not apply it during traversal or file filtering.
