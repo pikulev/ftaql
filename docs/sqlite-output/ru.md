@@ -1,8 +1,8 @@
-# SQLite output
+# Результаты в SQLite
 
 ## Роль SQLite в FtaQl
 
-Project-level CLI и Node wrapper работают в SQLite-first режиме. Они не выдают полный analysis JSON в stdout, а сохраняют нормализованный snapshot в базу данных.
+При анализе проекта CLI и обёртка для Node.js сохраняют результаты в SQLite. Каждый запуск добавляет в базу отдельный набор метрик и связей. Эти данные можно запрашивать через SQL и сравнивать между ревизиями; stdout CLI содержит только краткую сводку.
 
 Основная функция записи:
 
@@ -16,7 +16,7 @@ persist_run(
 
 ## Что хранится
 
-Текущая schema version: `3`.
+Текущая версия схемы: `3`.
 
 Основные таблицы:
 
@@ -29,19 +29,21 @@ persist_run(
 
 В `analysis_runs` можно опционально хранить два поля ревизии:
 
-- `revision` для точного идентификатора снапшота, обычно commit SHA
+- `revision` для точного идентификатора ревизии, обычно SHA коммита
 - `ref_label` для человекочитаемой метки ветки, тега или канала
 
 ## Практические нюансы
 
-- Повторные запуски append-ятся в ту же базу как новые строки `analysis_runs`.
-- `revision` удобен для точного сравнения снапшотов, а `ref_label` для фильтрации или группировки по ветке, тегу или release line.
+- Повторные запуски добавляют в ту же базу новые строки `analysis_runs`.
+- По `revision` можно сравнивать конкретные ревизии, а по `ref_label` — фильтровать и группировать запуски по ветке, тегу или линии релизов.
 - `PersistRunSummary` возвращает `run_id`, `file_count`, `cycle_count`, `runtime_cycle_count`.
 - В `file_dependencies`, `cycle_files` и `cycle_edges` попадают только связи между файлами, которые реально присутствуют в `findings`.
-- `config_json` хранит уже resolved config, а не исходный текст файла.
-- Нормализованная модель циклов в SQLite разворачивает `project_analysis.cycle_members` и `CycleInfo.graph` в SQL-friendly таблицы.
+- `config_json` хранит итоговую конфигурацию после объединения с настройками по умолчанию.
+- Данные из `project_analysis.cycle_members` и `CycleInfo.graph` разворачиваются в таблицы циклов, их участников и рёбер. Так их можно запрашивать через SQL.
 
 ## Пример запроса
+
+Чтобы найти файлы с самыми высокими оценками в последнем запуске, отсортируйте строки таблицы `files` по `file_score` и `coupling_score`:
 
 ```sql
 SELECT file_path, file_score, coupling_score
@@ -51,4 +53,4 @@ ORDER BY file_score DESC, coupling_score DESC
 LIMIT 20;
 ```
 
-Смысл и формулы для `file_score` и `coupling_score` вынесены в [`../scoring/ru.md`](../scoring/ru.md).
+Интерпретация этих оценок и формулы их расчёта описаны в разделе [«Скоринг»](../scoring/ru.md).

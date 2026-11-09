@@ -1,57 +1,55 @@
 # Конфигурация
 
-## Где живет конфиг
+## Где находится файл конфигурации
 
-По умолчанию FtaQl ищет `ftaql.json` в корне анализируемого проекта. CLI позволяет переопределить только путь к этому файлу:
+По умолчанию FtaQl ищет `ftaql.json` в корне анализируемого проекта. Если настройки лежат в другом месте, укажите путь через `--config-path`:
 
 ```bash
 ftaql /path/to/project --db ./ftaql.sqlite --config-path ./ftaql.json
 ```
 
-Если путь к конфигу явно не указан и файла нет, используется default config. Если путь был указан явно и файл отсутствует, CLI завершится ошибкой.
+Если путь не указан и в корне проекта нет `ftaql.json`, FtaQl использует настройки по умолчанию. Если вы явно указали путь, а файла по нему нет, CLI завершится ошибкой.
 
-## Поддерживаемые поля
+## Поля и значения по умолчанию
 
-- `extensions`
-- `exclude_filenames`
-- `exclude_directories`
-- `score_cap`
-- `include_comments`
-- `exclude_under`
+Файл `ftaql.json` поддерживает следующие поля:
 
-## Дефолтные значения
+| Поле | Значение по умолчанию |
+| --- | --- |
+| `extensions` | `.js`, `.jsx`, `.ts`, `.tsx` |
+| `exclude_filenames` | `.d.ts`, `.min.js`, `.bundle.js` |
+| `exclude_directories` | `/dist`, `/bin`, `/build` |
+| `score_cap` | `1000` |
+| `include_comments` | `false` |
+| `exclude_under` | `6` |
 
-- `extensions`: `.js`, `.jsx`, `.ts`, `.tsx`
-- `exclude_filenames`: `.d.ts`, `.min.js`, `.bundle.js`
-- `exclude_directories`: `/dist`, `/bin`, `/build`
-- `score_cap`: `1000`
-- `include_comments`: `false`
-- `exclude_under`: `6`
+## Как применяются настройки
 
-## Merge-поведение
+Списки `extensions`, `exclude_filenames` и `exclude_directories` из файла дополняют значения по умолчанию. Поля `score_cap`, `include_comments` и `exclude_under` заменяют соответствующие значения по умолчанию.
 
-- `extensions`, `exclude_filenames` и `exclude_directories` дописываются к дефолтным значениям.
-- `score_cap`, `include_comments` и `exclude_under` переопределяют дефолты.
-- Resolved config сериализуется и сохраняется в SQLite как `analysis_runs.config_json`.
+После объединения настроек FtaQl сохраняет итоговую конфигурацию в SQLite, в поле `analysis_runs.config_json`.
 
-## `tsconfig.json` и `jsconfig.json`
+## Исключение каталогов
 
-Resolver учитывает:
+В список `exclude_directories` по умолчанию входят только `/dist`, `/bin` и `/build`. При обходе проекта FtaQl дополнительно учитывает `.gitignore` и правила git exclude.
 
-- `compilerOptions.paths`
-- `compilerOptions.baseUrl`
-- `extends`
-- project references
+Поэтому `node_modules` часто пропускается благодаря git-правилам, хотя его нет в списке исключений FtaQl по умолчанию. Если нужный каталог не покрыт git-правилами, укажите его в `exclude_directories`.
 
-Это влияет на корректность dependency graph и coupling analysis.
+## Разрешение импортов
 
-## Важные нюансы
+Чтобы определить, на какие файлы ссылаются импорты, FtaQl учитывает настройки `tsconfig.json` и `jsconfig.json`:
 
-- Дефолтные `exclude_directories` включают только `/dist`, `/bin` и `/build`.
-- При project-level анализе FtaQl отдельно применяет правила `.gitignore` и git exclude, помимо `ftaql.json`.
-- Поэтому `node_modules` часто не попадает в обход автоматически, если уже игнорируется git-правилами, но это не часть дефолтного `exclude_directories`.
-- Если каталог не покрыт `.gitignore`, но его все равно нужно пропустить, добавьте его явно в `exclude_directories`.
-- `include_comments` влияет на `line_count`, а значит и на `file_score`.
-- `score_cap` завершает процесс с кодом `1`, если файл превысил порог.
-- `exclude_under` присутствует в публичной конфигурации и сохраняется в SQLite, но текущий pipeline его не применяет при обходе или фильтрации файлов.
-- Подробно про смысл `file_score`, `coupling_score` и их формулы: [`../scoring/ru.md`](../scoring/ru.md).
+- `compilerOptions.paths`;
+- `compilerOptions.baseUrl`;
+- наследование через `extends`;
+- ссылки между проектами (project references).
+
+От разрешения импортов зависит, какие связи попадут в граф проекта и расчёт связности.
+
+## Влияние настроек на результат
+
+- `include_comments` меняет число строк `line_count`, которое участвует в расчёте `file_score`.
+- Если `file_score` превышает `score_cap`, процесс завершается с кодом `1`.
+- `exclude_under` сохраняется в конфигурации SQLite, но текущая реализация не использует это поле при обходе или фильтрации файлов.
+
+Смысл и формулы `file_score` и `coupling_score` описаны в разделе [«Скоринг»](../scoring/ru.md).

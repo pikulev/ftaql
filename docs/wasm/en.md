@@ -10,7 +10,7 @@ Exported function:
 analyze_file_ftaql(source_code: string, use_tsx: boolean, include_comments: boolean): string
 ```
 
-Expected browser flow:
+Before the first analysis, load WASM with `init()`. The analysis function returns a JSON string, which you can convert to an object with `JSON.parse(...)`:
 
 ```js
 import init, { analyze_file_ftaql } from "@piklv/ftaql-wasm";
@@ -22,7 +22,7 @@ const analysis = JSON.parse(json);
 
 ## What it returns
 
-The result is always a JSON string for a single `FileData`.
+A successful analysis returns a JSON string for a single `FileData`.
 
 - it includes `size_metrics`
 - it includes `complexity_metrics`

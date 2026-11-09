@@ -151,11 +151,10 @@ Those thresholds should be tuned to your own project.
 - `score_cap` only applies to `file_score`.
 - In WASM, `coupling_score` is always `0.0` because there is no project-level dependency graph or cycle analysis.
 - Type-only dependencies can form a full-graph cycle that affects architecture and tooling without necessarily affecting runtime.
-- `crates/COUPLING_SCORE.md` is useful as an engineering note, but it does not fully match the current implementation and should not be treated as the user-facing specification without caveats.
 
 ## Related docs
 
-- [`../configuration/en.md`](../configuration/en.md)
-- [`../sqlite-output/en.md`](../sqlite-output/en.md)
-- [`../rust-core/en.md`](../rust-core/en.md)
-- [`../wasm/en.md`](../wasm/en.md)
+- [Configuration](../configuration/en.md)
+- [SQLite output](../sqlite-output/en.md)
+- [Rust core and native CLI](../rust-core/en.md)
+- [WebAssembly API](../wasm/en.md)
