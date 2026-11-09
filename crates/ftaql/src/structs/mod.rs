@@ -26,9 +26,8 @@ mod serde_helpers {
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct FtaQlConfigOptional {
-    pub extensions: Option<Vec<String>>,
-    pub exclude_filenames: Option<Vec<String>>,
-    pub exclude_directories: Option<Vec<String>>,
+    pub includes: Option<Vec<String>>,
+    pub excludes: Option<Vec<String>>,
     pub score_cap: Option<usize>,
     pub include_comments: Option<bool>,
     pub exclude_under: Option<usize>,
@@ -63,9 +62,8 @@ pub struct ExportInfo {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FtaQlConfigResolved {
-    pub extensions: Vec<String>,
-    pub exclude_filenames: Vec<String>,
-    pub exclude_directories: Vec<String>,
+    pub includes: Vec<String>,
+    pub excludes: Vec<String>,
     pub score_cap: usize,
     pub include_comments: bool,
     pub exclude_under: usize,
