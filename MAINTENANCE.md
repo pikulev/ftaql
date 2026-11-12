@@ -1,13 +1,15 @@
 # Maintenance of FtaQl
 
-FtaQl currently ships four maintainer-facing deliverables:
+FtaQl has two Rust crates and two npm packages to maintain:
 
 - the Rust crate `ftaql` in `crates/ftaql`
 - the Rust crate `ftaql-wasm` in `crates/ftaql-wasm`
 - the npm package `@piklv/ftaql-cli` in `packages/ftaql`
 - the npm package `@piklv/ftaql-wasm`, generated from `crates/ftaql-wasm/pkg`
 
-The CLI npm package is intentionally thin. It only dispatches to a platform-specific `ftaql` binary that must be present inside `packages/ftaql/binaries` at publish time.
+The CLI npm package runs a platform-specific `ftaql` binary. Publishing that package therefore requires the binaries to be present in `packages/ftaql/binaries`.
+
+For development tasks and agent instructions, see [AGENTS.md](AGENTS.md). The [ftaql project](https://github.com/users/pikulev/projects/1) tracks planned work, including the release-flow checks in [#26](https://github.com/pikulev/ftaql/issues/26).
 
 ## What CI verifies
 
@@ -22,11 +24,11 @@ Current CI covers:
 - npm CLI dry-run publish via Verdaccio
 - WASM package dry-run build and metadata verification
 
-The npm CLI package itself is plain JavaScript, so there is no extra Node build step.
+The npm CLI package itself is plain JavaScript, so there is no extra Node build step. The PR workflow builds the WASM package but does not exercise its release-only upload and download steps or production publishing. When changing those steps, validate them separately from the normal PR checks.
 
 ## Release surface
 
-The first stable release consists of these public artefacts:
+The release workflow distributes these artifacts:
 
 - a draft GitHub Release with native archives for:
   - `ftaql-x86_64-apple-darwin.tar.gz`
@@ -54,7 +56,7 @@ Before tagging a release, verify all of the following:
   - add the required reviewers who should approve `@piklv/ftaql-wasm`
 - your npm account is ready for both automated npm publishes:
   - `npm whoami` succeeds
-- the crates.io account that will publish `ftaql` is ready for a first publish
+- the crates.io account has permission to publish `ftaql`
 
 Useful checks:
 
@@ -80,7 +82,7 @@ For a version bump:
 3. Run `cargo update` so the lockfile stays in sync.
 4. Merge the PR and wait for `test` to pass on `main`.
 
-For `v1.0.0`, the version is already aligned in the files above.
+Before tagging, verify that the intended version matches all four manifests.
 
 ## Pre-tag checklist
 
@@ -99,7 +101,7 @@ That last point matters because `packages/ftaql/check.js` enforces the presence 
 
 The automated release covers GitHub Release assets, `ftaql` on crates.io, `@piklv/ftaql-cli` on npm, and `@piklv/ftaql-wasm` on npm.
 
-Create and push the tag from a clean local checkout:
+Once the preparation PR is merged and the pre-tag checks pass, create and push the tag from a clean local checkout. Replace `v1.0.0` in this example with the version prepared in that PR:
 
 ```sh
 git tag v1.0.0
@@ -124,7 +126,7 @@ The release workflow should produce:
 - a paused approval step on the `wasm-publish` environment before the WASM npm publish
 - a published `@piklv/ftaql-wasm` package on npm after approval
 
-The WASM publish is no longer a separate manual post-release procedure. It is built and verified in the same tagged workflow, then waits for approval before the final npm publish step.
+The tagged workflow builds and verifies the WASM package before publication. Once the earlier publication jobs finish, the `wasm-publish` environment pauses the workflow for approval. Approval allows the final WASM npm publish step to run.
 
 ## Post-release verification
 

@@ -1,5 +1,7 @@
 # FtaQl Docs
 
+Start with the public API overview to choose between the CLI, Rust API, and WASM. Then follow the usage and configuration guides for that interface.
+
 Documentation is grouped by topic folders. Each topic is available in Russian and English:
 
 - `ru.md` for Russian
@@ -17,4 +19,4 @@ Documentation is grouped by topic folders. Each topic is available in Russian an
 - SQLite Output: [RU](sqlite-output/ru.md) | [EN](sqlite-output/en.md)
 - Scoring: [RU](scoring/ru.md) | [EN](scoring/en.md)
 
-This documentation is based on the current code behavior, including public-facing caveats and limitations.
+Each guide describes current behavior and its limitations. For repository work, see [AGENTS.md](../AGENTS.md); for release preparation, see [MAINTENANCE.md](../MAINTENANCE.md).

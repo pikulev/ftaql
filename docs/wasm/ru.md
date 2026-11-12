@@ -2,15 +2,15 @@
 
 ## Публичный API
 
-Пакет `@piklv/ftaql-wasm` предназначен для browser-side single-file analysis.
+Пакет `@piklv/ftaql-wasm` анализирует один исходный файл в браузере. Исходный код передаётся строкой, поэтому доступ к файловой системе не требуется.
 
-Экспортируемая функция:
+Для анализа пакет экспортирует функцию:
 
 ```ts
 analyze_file_ftaql(source_code: string, use_tsx: boolean, include_comments: boolean): string
 ```
 
-Ожидаемый browser flow:
+Перед первым вызовом загрузите WASM через `init()`. Функция анализа вернёт JSON-строку, которую можно преобразовать в объект через `JSON.parse(...)`:
 
 ```js
 import init, { analyze_file_ftaql } from "@piklv/ftaql-wasm";
@@ -22,22 +22,19 @@ const analysis = JSON.parse(json);
 
 ## Что возвращается
 
-Результат всегда является JSON-строкой одного `FileData`.
+При успешном анализе результат содержит один объект `FileData`, сериализованный в JSON:
 
-- есть `size_metrics`
-- есть `complexity_metrics`
-- есть `scores.file_score`
-- `coupling_metrics` отсутствует
-- `scores.coupling_score` равен `0.0`
+- `size_metrics` — метрики размера файла;
+- `complexity_metrics` — метрики сложности;
+- `scores.file_score` — сводную оценку файла.
+
+Поскольку WASM не получает другие файлы проекта, он не строит граф зависимостей и не ищет циклы. Поэтому `coupling_metrics` отсутствует, а `scores.coupling_score` равен `0.0`.
 
 ## Ограничения и нюансы
 
-- WASM анализирует только один исходный файл.
-- Доступа к файловой системе нет.
-- Project-level dependency graph и cycle analysis не строятся.
 - Поле `file_name` всегда фиксировано как `source.ts`.
-- Ошибки парсинга пробрасываются как JS exception через `wasm_bindgen::throw_str(...)`.
-- `use_tsx` управляет режимом парсинга TSX/не-TSX.
+- Ошибки разбора передаются в JavaScript как исключения через `wasm_bindgen::throw_str(...)`.
+- `use_tsx` включает или отключает разбор синтаксиса TSX.
 - `include_comments` влияет на `line_count`.
 
-Подробно про `file_score` и почему `coupling_score` в WASM равен `0.0`: [`../scoring/ru.md`](../scoring/ru.md).
+Формула и интерпретация `file_score` описаны в разделе [«Скоринг»](../scoring/ru.md).

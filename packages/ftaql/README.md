@@ -2,9 +2,9 @@
 
 [English](https://github.com/pikulev/ftaql/blob/main/README.md) | [Русский](https://github.com/pikulev/ftaql/blob/main/README.ru.md)
 
-FtaQl helps you see where risk is actually accumulating in a TS/JS project. It walks the repository, stores a snapshot in SQLite, and turns code analysis into plain SQL instead of guesswork.
+FtaQl helps you find complex files and tightly coupled modules in TypeScript and JavaScript projects. It analyzes a repository and stores the results in SQLite, where you can explore them with SQL queries.
 
-After one run you can ask which files stay expensive across revisions, where coupling keeps growing, and when runtime cycles first appeared. That makes it useful for refactors, CI, and history analysis when you need an accumulated dataset instead of a one-off report.
+The first run identifies files with high complexity and coupling scores. As you collect results for more revisions, you can track changes in those scores and see when dependency cycles appear. This history helps assess changes during refactoring and in CI.
 
 FtaQl started as a fork of [`sgb-io/fta`](https://github.com/sgb-io/fta) and gradually grew into its own continuation of that idea. I am grateful to that project for the original inspiration and for making it possible to take the idea further.
 
@@ -34,10 +34,7 @@ A `runtime` cycle is a cyclic dependency through runtime entities. A full-graph 
 
 ## Quickstart: run -> persist -> query
 
-Project-level analysis is available through the native CLI and the Node.js wrapper. The WASM build analyzes a single file and returns JSON for that file only.
-In WASM, `coupling_score` is always `0.0`, and there is no project-level dependency graph or cycle analysis.
-
-The basic loop is simple: persist a snapshot to SQLite, attach `revision` and `ref` when needed, then query the accumulated runs with SQL.
+To analyze a project, run the native CLI or the Node.js wrapper. The CLI stores the results in SQLite so you can query them with SQL.
 
 Persist the current checkout:
 
@@ -62,24 +59,18 @@ npx @piklv/ftaql-cli path/to/project \
   --config-path ./path/to/ftaql.json
 ```
 
-Main options:
-
-- `--db`
-- `--config-path`
-- `--revision`
-- `--ref`
+The `--db` option is required. `--config-path`, `--revision`, and `--ref` are optional.
 
 When you append multiple runs into the same SQLite database:
 
 - `--revision` stores the exact snapshot identifier, usually a commit SHA
 - `--ref` stores a human-readable branch, tag, or channel label such as `main`, `release/1.2`, or `nightly`
-- using both lets you compare exact snapshots while still grouping runs by branch or release line
+
+Use both parameters to compare exact revisions and group runs by branch or release line.
 
 ## Querying the Snapshot History
 
-Once snapshots are in SQLite, the interesting part starts.
-
-Worst files in the latest snapshot:
+Stored results let you find files with high scores and compare runs. Start with the files that have the highest `file_score` in the latest run:
 
 ```sql
 SELECT file_path, file_score, coupling_score
@@ -202,7 +193,7 @@ Then add a script:
 
 ## Using FtaQl From Code
 
-`@piklv/ftaql-cli` also exports `runFtaQl(projectPath, options)`.
+To run analysis from JavaScript, call `runFtaQl(projectPath, options)` from `@piklv/ftaql-cli`. Supply the required SQLite database path in `options.dbPath`:
 
 ```javascript
 import { runFtaQl } from "@piklv/ftaql-cli";
@@ -218,11 +209,7 @@ const output = runFtaQl("path/to/project", {
 console.log(output);
 ```
 
-Important notes about the Node.js wrapper:
-
-- `options.dbPath` is required
-- the wrapper persists a snapshot and returns the CLI summary from stdout
-- `configPath`, `revision`, and `ref` are forwarded to the native binary
+The wrapper stores the analysis results in SQLite and returns the CLI summary from stdout. The optional `configPath`, `revision`, and `ref` parameters are forwarded to the native binary.
 
 ## Configuration
 
@@ -236,7 +223,7 @@ The `ftaql.json` file controls analysis behavior such as:
 - `include_comments`
 - `exclude_under`
 
-During project-level analysis, FtaQl also respects `.gitignore`. That means `node_modules` is usually skipped automatically when it is already ignored by git rules. If a directory is not covered by `.gitignore`, add it to `excludes`. See [`docs/configuration/en.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/en.md) for details.
+During project-level analysis, FtaQl also respects `.gitignore`. That means `node_modules` is usually skipped automatically when it is already ignored by git rules. If a directory is not covered by `.gitignore`, add its glob pattern to `excludes`. This list replaces the default exclusions entirely, so retain any default patterns you still need. See [`docs/configuration/en.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/en.md) for details.
 
 FtaQl also auto-detects `tsconfig.json` and `jsconfig.json` files when resolving imports. It supports:
 
@@ -245,7 +232,7 @@ FtaQl also auto-detects `tsconfig.json` and `jsconfig.json` files when resolving
 - inherited configs via `extends`
 - project references discovered through the resolver
 
-For monorepo and nested-config examples, see [`docs/usage-patterns/en.md`](https://github.com/pikulev/ftaql/blob/main/docs/usage-patterns/en.md). For the exact config contract, see [`docs/configuration/en.md`](https://github.com/pikulev/ftaql/blob/main/docs/configuration/en.md).
+For details on how these settings apply during analysis, see [Configuration](https://github.com/pikulev/ftaql/blob/main/docs/configuration/en.md).
 
 ## WebAssembly
 
@@ -254,7 +241,9 @@ The `@piklv/ftaql-wasm` package is intended for browser usage and analyzes one s
 - input: source code string
 - output: JSON string for a single file
 - no filesystem access
-- no project-level coupling analysis
+- no project-level coupling or cycle analysis
+
+Without the project graph, `coupling_score` is always `0.0`. For the calling sequence and limitations, see [WebAssembly API](https://github.com/pikulev/ftaql/blob/main/docs/wasm/en.md).
 
 ## Docs
 
